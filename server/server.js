@@ -16,17 +16,17 @@ app.post('/todos', (req, res) => {
     var todo = new Todo({
         text: req.body.text
     });
-    todo.save().then((doc) => {
-        res.send(doc);
+    todo.save().then((todos) => {
+        res.send(todos);
     }, (err) => {
         res.status(400).send(err);
     });
 });
 
 app.get('/todos', (req, res) => {
-    Todo.find().then((doc) => {
+    Todo.find().then((todos) => {
         res.send({
-            doc: doc //Creating an object that allows us to add other properties 
+            todos: todos //Creating an object that allows us to add other properties 
         });
     }, (err) => {
         res.status(400).send(err);

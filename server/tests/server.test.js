@@ -4,9 +4,17 @@ const expect = require('expect');
 var {app} = require('./../server.js');
 var {Todo} = require('./../models/todo.js');
 
+const todos = [{
+    text: 'Walk your dog'
+}, {
+    text: 'Walk your alligator'
+}];
+
 
 beforeEach((done) => { //data base gets emptied before every request 
     Todo.remove({}).then(() => {
+        return Todo.insertMany(todos);
+    }).then(() => {
         done();
     });
 });
@@ -30,7 +38,7 @@ describe('POST /todos', () => {
               return done(err);
             }
 
-            Todo.find().then((todos) => {
+            Todo.find({text: text}).then((todos) => {
                 expect(todos.length).toBe(1);//added one todo item
                 expect(todos[0].text).toBe(text);//the item added which is at index 0, has a text
                 //property that equals to the text variable above
@@ -54,12 +62,23 @@ describe('POST /todos', () => {
             }
 
             Todo.find().then((todos) => {
-                expect(todos.length).toBe(0); //since no doc should be created 
+                expect(todos.length).toBe(2); //since no doc should be created 
                 done();
             }).catch((err) => {
                 done(err);
             });
         });
     });
-    
+});
+
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+        request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todos.length).toBe(2);
+        })
+        .end(done);
+    });
 });
