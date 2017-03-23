@@ -1,8 +1,9 @@
 var mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise; //Sets to use the built in promise library 
-mongoose.connect('mongodb://localhost:27017/TodoApp');
-
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
+//checks if the process enviornment variable is available to connect to heroku otherwise use the
+//local host 
 module.exports = {
 
     mongoose: mongoose
