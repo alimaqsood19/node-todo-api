@@ -41,12 +41,12 @@ app.get('/todos/:id', (req, res) => {
         return res.status(404).send('Invalid User');
     }
 
-    Todo.findById({_id: id}).then((user) => {
-        if (!user) {
+    Todo.findById({_id: id}).then((todo) => {
+        if (!todo) {
             return res.status(404).send('Not found');
         }
         res.send({
-            user: user
+            todo: todo
         });
     }).catch((err) => {
         res.status(400).send(err);
