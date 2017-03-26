@@ -101,13 +101,53 @@ describe('GET /todos/:id', () => {
         var id = new ObjectID();
         id.toHexString();
         request(app)
-        .get('/todos/${id}')
+        .get(`/todos/${id}`)
         .expect(404)
         .end(done)
     });
 
     it('should return a 404 if invalid id', (done) => {
         request(app)
+        .get('/todos/123abc')
+        .expect(404)
+        .end(done)
+    });
+});
+
+describe('DELETE /todos/:id', () => {
+    it('should remove a todo', (done) => {
+        var hexId = todos[1]._id.toHexString(); //toHexString() converts ObjectID to string
+        request(app)
+        .delete(`/todos/${hexId}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo._id).toBe(hexId);
+        })
+        .end((err, res) => {
+            if (err) {
+                return done(err);
+            }
+
+            Todo.findById({_id: hexId}).then((todo) => {
+                expect(todo).toNotExist(); //expects that the result todo doesn't exist 
+                done(); //wraps up test case 
+            }).catch((err) => { //if any of the expectations fails then return the error 
+                done(err);
+            });
+        });
+    });
+
+    it('should return 404 if todo not found', (done) => {
+        var id = new ObjectID(); //creates a new ID that wont exist deliberatly in the DB
+        id.toHexString();
+        request(app)
+        .delete(`/todos/${id}`)
+        .expect(404)
+        .end(done)
+    });
+
+    it('should return 404 if objectID invalid', (done) => {
+        request(app)    //Enter an invalid ID to get back the proper response 
         .get('/todos/123abc')
         .expect(404)
         .end(done)
