@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var {ObjectID} = require('mongodb');
+const _ = require('lodash');
+
 
 
 var {mongoose} = require('./db/mongoose.js');
@@ -70,6 +72,44 @@ app.delete('/todos/:id', (req, res) => {
         });
     }).catch((err) => {
         res.status(400).send(err);
+    });
+});
+
+//When you wanna update a resource
+
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text', 'completed']); //_.pick picks properties off a specified obj
+    var invalidFields = _.pick(req.body, ['_id', 'completedAt']);
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send('Invalid User ID');
+    }
+
+    if (invalidFields._id || invalidFields.completedAt) {
+            return res.status(404).send('Denied request to change _id and completedAt fields');
+        }
+
+    if (_.isBoolean(body.completed) && body.completed) {
+        
+        //this will run if body.completed is a boolean and is true
+        body.completedAt = new Date().getTime(); //returns a JS timestamp 
+        //if conditionals met then body.completedAt will give user a timestamp of completion
+    }else {
+        body.completed = false;
+        body.completedAt = null;
+        //otherwise set the completed and completedAt properties to default
+    }
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if (!todo) {
+            return res.status(404).send('No Todo Found');
+        }
+
+        res.send({
+            todo:todo 
+        });
+    }).catch((err) => {
+        res.status(400).send('Invalid ID');
     });
 });
 
