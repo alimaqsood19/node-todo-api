@@ -1,3 +1,6 @@
+require('./config/config.js');
+
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var {ObjectID} = require('mongodb');
@@ -11,7 +14,7 @@ var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
 var app = express();
-const port = process.env.PORT || 3000; 
+const port = process.env.PORT; 
 
 app.use(bodyParser.json());//converts JSON to JS object. So the JSON string that returns from
 //the client gets converted into JS object and gets attached to req.body and then we display that
@@ -21,7 +24,9 @@ app.post('/todos', (req, res) => {
         text: req.body.text
     });
     todo.save().then((todos) => {
-        res.send(todos);
+        res.send({
+            todos: todos
+        });
     }, (err) => {
         res.status(400).send(err);
     });
