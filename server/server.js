@@ -12,6 +12,7 @@ var {mongoose} = require('./db/mongoose.js');
 
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
+var {authenticate} = require('./middleware/authenticate.js');
 
 var app = express();
 const port = process.env.PORT; 
@@ -131,7 +132,7 @@ var body = _.pick(req.body, ['email', 'password']);
 
     user.save().then(() => { //saves the new user to the User collection which then returns a .then call
         //after the doc has been saved, we call the function generateAuthToken() which saves a token 
-       return user.generateAuthToken();
+       return user.generateAuthToken(); //instance of user calling an instance method
        //this is only called once we have a validated succesful creation of a user email and password
        //the function creates an auth token and saves it to the user document (second save request)
        //the success value returned is the token string itself 
@@ -142,6 +143,10 @@ var body = _.pick(req.body, ['email', 'password']);
     }).catch((err) => {
         res.status(400).send(err);
     });
+});
+
+app.get('/users/me', authenticate, (req, res) => { //provide validate x-auth token, find the associated user and send that user back
+    res.send(req.user);//sending back the user available on req.user we specified above 
 });
 
 app.listen(port, () => {

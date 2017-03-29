@@ -48,10 +48,11 @@ UserSchema.methods.toJSON = function () {
     return _.pick(userObject, ['_id', 'email']); //returns only what the user should see, the email and id
 };
 
-UserSchema.methods.generateAuthToken = function () {
+UserSchema.methods.generateAuthToken = function () { //UserSchema.`methods` is an instance method
+    //instance methods get called with the individual document 
     //create a variable to make it clear that 'this' was actually just the user instance
     //so instead of this._id or this.tokens or this.save().then(() => {})
-    var user = this; 
+    var user = this; //`this` refers to the instance created 
     var access = 'auth';
     var token = jwt.sign({
         _id: user._id.toHexString(), access: access}, 'abc123').toString();
@@ -70,6 +71,33 @@ UserSchema.methods.generateAuthToken = function () {
     })
 
 };
+
+UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a model method not instance 
+    var User = this; //model methods get called with the model as `this` binding 
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    }catch (err) {
+        return Promise.reject(); //can add a value which will be used in the catch err argument
+        // return new Promise((resolve, reject) => {
+        //     reject(); //if there is an error the promise will return reject which will not
+        //     //let the success case continue in server.js
+        // });
+    }
+
+    return User.findOne({
+        _id: decoded._id, //jwt.verify returns id and iat setting the query _id to that value
+        'tokens.token': token, //querying a nested document so we wrap it in quotes, so its 'tokens.token'
+        //that value is the token from above, this is also a mongoose query syntax where it basically
+        //says if any object in the tokens array has a token property equal to x and an access property
+        //equal to y then do something
+        //syntax specifically looks through all objects in the tokens array thats why we dont
+        //specify the index something like 'tokens[0].token'
+        'tokens.access': 'auth'
+    }); 
+
+}
 
 var User = mongoose.model('User', UserSchema);
 
