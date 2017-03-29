@@ -1,4 +1,4 @@
-require('./config/config.js');
+require('./config/config.js'); 
 
 
 var express = require('express');
@@ -115,6 +115,32 @@ app.patch('/todos/:id', (req, res) => {
         });
     }).catch((err) => {
         res.status(400).send('Invalid ID');
+    });
+});
+
+
+app.post('/users', (req, res) => {
+var body = _.pick(req.body, ['email', 'password']);
+
+    var user = new User({
+        email: body.email,
+        password: body.password
+    });
+    //Two save requests made, once for the user creation of email and password
+    //second request through the generateAuthToken() func which saves the token to that same doc
+
+    user.save().then(() => { //saves the new user to the User collection which then returns a .then call
+        //after the doc has been saved, we call the function generateAuthToken() which saves a token 
+       return user.generateAuthToken();
+       //this is only called once we have a validated succesful creation of a user email and password
+       //the function creates an auth token and saves it to the user document (second save request)
+       //the success value returned is the token string itself 
+
+    }).then((token) => {
+        res.header('x-auth', token).send(user); //custom header with x-, a header we are using for a 
+        //specific purpose, we are using a jwt scheme so we using a custom header 
+    }).catch((err) => {
+        res.status(400).send(err);
     });
 });
 
