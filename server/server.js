@@ -1,6 +1,5 @@
 require('./config/config.js'); 
 
-
 var express = require('express');
 var bodyParser = require('body-parser');
 var {ObjectID} = require('mongodb');
@@ -140,13 +139,14 @@ var body = _.pick(req.body, ['email', 'password']);
     }).then((token) => {
         res.header('x-auth', token).send(user); //custom header with x-, a header we are using for a 
         //specific purpose, we are using a jwt scheme so we using a custom header 
+        //takes the token value from the previous success value and sends to user 
     }).catch((err) => {
         res.status(400).send(err);
     });
 });
 
 app.get('/users/me', authenticate, (req, res) => { //provide validate x-auth token, find the associated user and send that user back
-    res.send(req.user);//sending back the user available on req.user we specified above 
+    res.send(req.user);//sending back the user available on req.user we specified in authenticate func
 });
 
 app.listen(port, () => {

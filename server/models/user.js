@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
     email: {
@@ -46,7 +47,8 @@ UserSchema.methods.toJSON = function () {
     //object where only the properties available on the document exist
 
     return _.pick(userObject, ['_id', 'email']); //returns only what the user should see, the email and id
-};
+};//SO everytime from the api end points theres a res.send it will only SEND BACK to user the id and email 
+//because of the modified toJSON method which in turn modified JSON.stringify which is associated with res.send()
 
 UserSchema.methods.generateAuthToken = function () { //UserSchema.`methods` is an instance method
     //instance methods get called with the individual document 
@@ -68,7 +70,7 @@ UserSchema.methods.generateAuthToken = function () { //UserSchema.`methods` is a
 //promise .then statement using the token string as the value to be used 
    return user.save().then(() => { //allows us to chain on a promise in server.js file
         return token; //this value will be passed on as the success argument for the next .then call
-    })
+    }) //saves the new generated token to database then returns the token as sucess argument 
 
 };
 
@@ -77,8 +79,8 @@ UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a 
     var decoded;
 
     try {
-        decoded = jwt.verify(token, 'abc123');
-    }catch (err) {
+        decoded = jwt.verify(token, 'abc123'); //takes the token and the secret to verify token 
+    }catch (err) { //if err in verification reject stop function
         return Promise.reject(); //can add a value which will be used in the catch err argument
         // return new Promise((resolve, reject) => {
         //     reject(); //if there is an error the promise will return reject which will not
@@ -86,7 +88,7 @@ UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a 
         // });
     }
 
-    return User.findOne({
+    return User.findOne({ //otherwise find the user by the id provided by jwt.verify method which provides the user id once verified
         _id: decoded._id, //jwt.verify returns id and iat setting the query _id to that value
         'tokens.token': token, //querying a nested document so we wrap it in quotes, so its 'tokens.token'
         //that value is the token from above, this is also a mongoose query syntax where it basically
@@ -95,9 +97,30 @@ UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a 
         //syntax specifically looks through all objects in the tokens array thats why we dont
         //specify the index something like 'tokens[0].token'
         'tokens.access': 'auth'
+        //querying token.token and tokens.access for added measure making sure they are all the same 
+        //RETURNS the user document pertaining to the given information 
     }); 
 
 }
+
+UserSchema.pre('save', function (next) {//executed before the 'save' event saving doc to db
+//so before the user instance document is saved to db we want to make some changes to the instance 
+    var user = this;
+
+   if (user.isModified('password')) { //only want to hash if password property modified
+    bcrypt.genSalt(10, (err, salt) => { //generates a salt 10 rounds with callback
+        bcrypt.hash(user.password, salt, (err, hash) => { // hashes using the user.password input and generated salt
+            user.password = hash; //sets the user.password property to the new hash value
+            next();
+        });
+    });
+   }else {  
+       next();
+   }
+
+}); //before we save the document to db we add some middleware that makes changes to certain properties
+
+
 
 var User = mongoose.model('User', UserSchema);
 

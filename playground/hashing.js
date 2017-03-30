@@ -42,3 +42,20 @@ console.log(jwtToken);
 
 var decoded = jwt.verify(jwtToken, '123abc');
 console.log('decoded', decoded);
+
+
+const bcrypt = require('bcryptjs');
+
+var pass = '123abc!'
+
+bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(pass, salt, (err, hash) => {
+        console.log(hash);
+    });
+});
+
+var hashedPassword = '$2a$10$fO9pidpG7jOxNOzIyf.ZZONHu6fSE2lUHOUZFptCmXzf2c5dyxaZu';
+
+bcrypt.compare(pass, hashedPassword, (err, res) => {
+    console.log('Value is: ', res);
+});
