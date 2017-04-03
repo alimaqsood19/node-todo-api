@@ -57,7 +57,7 @@ UserSchema.methods.generateAuthToken = function () { //UserSchema.`methods` is a
     var user = this; //`this` refers to the instance created 
     var access = 'auth';
     var token = jwt.sign({
-        _id: user._id.toHexString(), access: access}, 'abc123').toString();
+        _id: user._id.toHexString(), access: access}, process.env.JWT_SECRET).toString();
 
     user.tokens.push({
         access: access,
@@ -92,7 +92,7 @@ UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a 
     var decoded;
 
     try {
-        decoded = jwt.verify(token, 'abc123'); //takes the token and the secret to verify token 
+        decoded = jwt.verify(token, process.env.JWT_SECRET); //takes the token and the secret to verify token 
     }catch (err) { //if err in verification reject stop function
         return Promise.reject(); //can add a value which will be used in the catch err argument
         // return new Promise((resolve, reject) => {
