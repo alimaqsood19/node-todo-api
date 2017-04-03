@@ -92,7 +92,7 @@ app.patch('/todos/:id', (req, res) => {
 
     if (invalidFields._id || invalidFields.completedAt) {
             return res.status(404).send('Denied request to change _id and completedAt fields');
-        }
+        }//making sure client does not try and alter the id or completedAt fields 
 
     if (_.isBoolean(body.completed) && body.completed) {
         
@@ -106,12 +106,14 @@ app.patch('/todos/:id', (req, res) => {
     }
 
     Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+      // The $set operator replaces the value of a field with the specified value
+      // find by the specified id, {parameter to be changed in this case setting entire body, if fields dont exist it will still add}
+      // {new: true} returns the modified document rather the original
         if (!todo) {
             return res.status(404).send('No Todo Found');
         }
-
         res.send({
-            todo:todo 
+            todo:todo //sends updated document 
         });
     }).catch((err) => {
         res.status(400).send('Invalid ID');
@@ -162,6 +164,15 @@ app.post('/users/login', (req, res) => {
         res.status(400).send(err);
     });
    
+});
+
+app.delete('/users/me/token', authenticate, (req, res) => {
+    //authenticate sends user as req.user, calling removeToken function passing in the req.token
+    req.user.removeToken(req.token).then(() => {
+        res.status(200).send('Succesfully deleted token');
+    }, () => {
+        res.status(400).send();
+    });
 });
 
 app.listen(port, () => {
