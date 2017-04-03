@@ -97,7 +97,7 @@ UserSchema.statics.findByToken = function (token) { //UserSchema.`statics` is a 
         //syntax specifically looks through all objects in the tokens array thats why we dont
         //specify the index something like 'tokens[0].token'
         'tokens.access': 'auth'
-        //querying token.token and tokens.access for added measure making sure they are all the same 
+        //querying tokens.token and tokens.access for added measure making sure they are all the same 
         //RETURNS the user document pertaining to the given information 
     }); 
 
@@ -107,14 +107,18 @@ UserSchema.statics.findByCredentials = function (email, password) {
     var User = this;
 
     return User.findOne({email: email}).then((user) => {
+        //grabs the email and password passed in parameters, uses findOne, to see if email exists
         if (!user) {
             return Promise.reject();
         }
 
         return new Promise((resolve, reject) => {
+        //if user exists then we compare the passed in password to the password saved in the specified
+        //document (which is hashed) and send back a true or false response
             bcrypt.compare(password, user.password, (err, res) => {
                 if (res) {
-                    resolve(user); //resolves with the user success case above when the doc is found
+                    resolve(user); //resolves with the user success case above when the doc is found and
+                    //password comparison is true 
                 }else {
                     reject(err);
                 }

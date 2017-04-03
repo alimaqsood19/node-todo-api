@@ -152,9 +152,11 @@ app.get('/users/me', authenticate, (req, res) => { //provide validate x-auth tok
 app.post('/users/login', (req, res) => {
     var body = _.pick(req.body, ['email', 'password']);
    
-    User.findByCredentials(body.email, body.password).then((user) => {
+    User.findByCredentials(body.email, body.password).then((user) => { //send the entered email and password
+        //get back the found user 
         user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(user);
+        //call the function to generate an auth token with the user information the (_id)
+            res.header('x-auth', token).send(user); //send the user body back with the auth token
         })
     }).catch((err) => {
         res.status(400).send(err);
