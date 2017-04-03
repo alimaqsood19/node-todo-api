@@ -14,6 +14,10 @@ var Todo = mongoose.model('Todo', {
     completedAt: {
         type: Number,
         default: null
+    },
+    _creator: { //We store the ID of the user
+        type: mongoose.Schema.Types.ObjectId,
+        required: true 
     }
 });
 

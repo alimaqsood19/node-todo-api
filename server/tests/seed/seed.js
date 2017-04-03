@@ -3,16 +3,6 @@ const {Todo} = require('../../models/todo.js');
 const {User} = require('../../models/user.js');
 const jwt = require('jsonwebtoken');
 
-const todos = [{ //seed data 
-    _id: new ObjectID(),
-    text: 'Walk your dog'
-}, {
-    _id: new ObjectID(),
-    text: 'Walk your alligator',
-    completed: true,
-    completedAt: 123
-}];
-
 const userOneId = new ObjectID();
 const userTwoID = new ObjectID();
 const users = [{
@@ -26,8 +16,23 @@ const users = [{
 }, {
     _id: userTwoID,
     email: 'ali2@hotmail.com',
-    password: 'userTwoPass'
-    //This one gets no token cuz the second user case is supposed to fail 
+    password: 'userTwoPass',
+     tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoID, access: 'auth'}, 'abc123').toString()
+    }]
+}];
+
+const todos = [{ //seed data 
+    _id: new ObjectID(),
+    text: 'Walk your dog',
+    _creator: userOneId
+}, {
+    _id: new ObjectID(),
+    text: 'Walk your alligator',
+    completed: true,
+    completedAt: 123,
+    _creator: userTwoID
 }];
 
 const populateTodos = (done) => { //data base gets emptied before every request 
