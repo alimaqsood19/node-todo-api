@@ -31,9 +31,7 @@ app.post('/todos', authenticate, (req, res) => {
         //_creator to equal that Users ID
     });
     todo.save().then((todos) => {
-        res.send({
-            todos: todos
-        });
+        res.send(todos);
     }, (err) => {
         res.status(400).send(err);
     });
