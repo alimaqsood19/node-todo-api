@@ -20,6 +20,8 @@ const port = process.env.PORT;
 
 
 app.set('view engine', 'hbs');
+//setting view engine
+
 
 app.use(bodyParser.json());//converts JSON to JS object. So the JSON string that returns from
 //the client gets converted into JS object and gets attached to req.body and then we display that
