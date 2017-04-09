@@ -4,8 +4,10 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var {ObjectID} = require('mongodb');
 const _ = require('lodash');
+const hbs = require('hbs');
+const path = require('path');
 
-
+const publicPath = path.join(__dirname, '../public');
 
 var {mongoose} = require('./db/mongoose.js');
 
@@ -16,8 +18,16 @@ var {authenticate} = require('./middleware/authenticate.js');
 var app = express();
 const port = process.env.PORT; 
 
+
+app.set('view engine', 'hbs');
+
 app.use(bodyParser.json());//converts JSON to JS object. So the JSON string that returns from
 //the client gets converted into JS object and gets attached to req.body and then we display that
+
+app.use(bodyParser.urlencoded({extended: true})); //pulls http POST content
+
+app.use(express.static(publicPath));
+
 
 app.post('/todos', authenticate, (req, res) => {
     var todo = new Todo({
@@ -160,6 +170,11 @@ var body = _.pick(req.body, ['email', 'password']);
     }).catch((err) => {
         res.status(400).send(err);
     });
+
+    res.render('user.hbs', {
+        userEmail: body.email,
+        password: body.password
+    })
 });
 
 app.get('/users/me', authenticate, (req, res) => { //provide validate x-auth token, find the associated user and send that user back
