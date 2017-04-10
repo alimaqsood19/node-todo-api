@@ -158,7 +158,7 @@ var body = _.pick(req.body, ['email', 'password']);
     //Two save requests made, once for the user creation of email and password
     //second request through the generateAuthToken() func which saves the token to that same doc
 
-    user.save().then(() => { //saves the new user to the User collection which then returns a .then call
+    return user.save().then(() => { //saves the new user to the User collection which then returns a .then call
         //after the doc has been saved, we call the function generateAuthToken() which saves a token 
        return user.generateAuthToken(); //instance of user calling an instance method
        //this is only called once we have a validated succesful creation of a user email and password
@@ -166,17 +166,22 @@ var body = _.pick(req.body, ['email', 'password']);
        //the success value returned is the token string itself 
 
     }).then((token) => {
-        res.header('x-auth', token).send(user); //custom header with x-, a header we are using for a 
+        res.header('x-auth', token).json(user); //custom header with x-, a header we are using for a 
         //specific purpose, we are using a jwt scheme so we using a custom header 
         //takes the token value from the previous success value and sends to user 
+
+        // res.render('user.hbs', {
+        //     userEmail: body.email,
+        //     password: body.password
+        // })
+
+        // res.json({
+        //     userEmail: body.email,
+        //     password: body.password
+        // });
     }).catch((err) => {
         res.status(400).send(err);
     });
-
-    res.render('user.hbs', {
-        userEmail: body.email,
-        password: body.password
-    })
 });
 
 app.get('/users/me', authenticate, (req, res) => { //provide validate x-auth token, find the associated user and send that user back
